@@ -21,8 +21,10 @@ ROOF_WIDTH = 480
 ROOF_COLOR = arcade.color.GRAY
 
 # Block Constants
-BLCK_WIDTH = 24
-BLCK_HEIGHT = 32
+BLCK_WIDTH = 36
+BLCK_HEIGHT = 12
+BLCK_PER_LINE = 12
+BLCK_NUM_LINES = 8
 
 # Paddle Constants
 PDDL_X = 240
@@ -106,9 +108,26 @@ class MyGame(arcade.Window):
         self.block_list = []
 
         # Setup the walls
-        l_wall = Rectangle(WALL_WIDTH/2, WALL_Y, WALL_WIDTH, WALL_HEIGHT, WALL_COLOR)
-        r_wall = Rectangle(SCREEN_WIDTH-WALL_WIDTH/2, WALL_Y, WALL_WIDTH, WALL_HEIGHT, WALL_COLOR)
+        l_wall = Rectangle(WALL_WIDTH/2, WALL_Y, 
+                           WALL_WIDTH, WALL_HEIGHT, WALL_COLOR)
+        r_wall = Rectangle(SCREEN_WIDTH-WALL_WIDTH/2, WALL_Y, 
+                           WALL_WIDTH, WALL_HEIGHT, WALL_COLOR)
         self.wall_list.extend([l_wall, r_wall])
+
+        # Setup the blocks
+        block_xs = [(WALL_WIDTH + BLCK_WIDTH/2) + (BLCK_WIDTH * n)
+                    for n in range(BLCK_PER_LINE)]
+        block_ys = [400 + (10 * n) for n in range(BLCK_NUM_LINES)]
+        block_colors = [arcade.color.YELLOW, arcade.color.YELLOW,
+                        arcade.color.GREEN, arcade.color.GREEN,
+                        arcade.color.ORANGE, arcade.color.ORANGE,
+                        arcade.color.RED, arcade.color.RED]
+        for i in range(BLCK_NUM_LINES):
+            for j in range(BLCK_PER_LINE):
+                x, y = block_xs[j], block_ys[i]
+                color = block_colors[i]
+                block = Rectangle(x, y, BLCK_WIDTH, BLCK_HEIGHT, color)
+                self.block_list.append(block)
 
         # Setup the roof
         roof = Rectangle(ROOF_X, ROOF_Y, ROOF_WIDTH, ROOF_HEIGHT, ROOF_COLOR)
@@ -133,7 +152,8 @@ class MyGame(arcade.Window):
         # Call draw() on all objects
         for wall in self.wall_list:
             wall.draw()
-        # self.block_list.draw()
+        for block in self.block_list:
+            block.draw()
         self.roof.draw()
         self.paddle.draw()
         self.ball.draw()
@@ -148,9 +168,7 @@ class MyGame(arcade.Window):
         pass
 
     def on_key_release(self, key, key_modifiers):
-        """
-        Called whenever the user lets off a previously pressed key.
-        """
+        """ Called whenever the user lets off a previously pressed key. """
         pass
 
 
