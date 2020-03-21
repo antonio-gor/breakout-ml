@@ -44,6 +44,17 @@ STATE_WON = 2
 STATE_GAME_OVER = 3
 
 
+class Brick:
+    """ Class for brick objects. """
+
+    def __init__(self, x_ofs, y_ofs, color):
+        self.brick = pygame.Rect(x_ofs, y_ofs, BRICK_WIDTH, BRICK_HEIGHT)
+        self.color = color
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.brick)
+
+
 class Breakout:
     """ Class for Breakout game. """
 
@@ -91,10 +102,6 @@ class Breakout:
 
         self.create_bricks()
 
-    def start_game(self):
-        """ Start the game by launching the ball. """
-        self.state = STATE_PLAYING
-
     def create_bricks(self):
         """ Create all bricks. """
 
@@ -103,15 +110,19 @@ class Breakout:
         x_ofs = 5
 
         # Create bricks (from top left to bottom right)
-        for _ in range(BRICK_LINES):
+        for i in range(BRICK_LINES):
             brick_line = []
             for _ in range(BRICK_PER_LINE):
-                brick = pygame.Rect(x_ofs, y_ofs, BRICK_WIDTH, BRICK_HEIGHT)
+                brick = Brick(x_ofs, y_ofs, BRICK_COLORS[i])
                 brick_line.append(brick)
                 x_ofs += BRICK_WIDTH + 10
             self.bricks.append(brick_line)
             x_ofs = 5
             y_ofs += BRICK_HEIGHT + 5
+
+    def start_game(self):
+        """ Start the game by launching the ball. """
+        self.state = STATE_PLAYING
 
     def check_input(self):
         """ Check for game inputs via keyboard. """
@@ -165,7 +176,7 @@ class Breakout:
         # Check for collision with brick
         for i, brick_line in enumerate(self.bricks):
             for _, brick in enumerate(brick_line):
-                if self.ball.colliderect(brick):
+                if self.ball.colliderect(brick.brick):
                     self.score += 3  # TODO: variable score by brick color
                     self.ball_vel[1] = -self.ball_vel[1]
                     self.bricks[i].remove(brick)
@@ -245,9 +256,9 @@ class Breakout:
                 self.ball.top + BALL_RADIUS), BALL_RADIUS)
 
             # Draw all bricks
-            for i, brick_line in enumerate(self.bricks):
+            for _, brick_line in enumerate(self.bricks):
                 for _, brick in enumerate(brick_line):
-                    pygame.draw.rect(self.screen, BRICK_COLORS[i], brick)
+                    brick.draw(self.screen)
 
             self.show_stats()
             pygame.display.flip()
