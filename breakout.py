@@ -82,12 +82,14 @@ class Breakout:
         # Create the game objects and containers
         self.lives = None
         self.score = None
+        self.hits = None
         self.state = None
 
         self.bricks = None
         self.paddle = None
         self.ball = None
         self.ball_vel = None
+        self.ball_speed = None
 
         self.init_game()
 
@@ -97,6 +99,7 @@ class Breakout:
         # Set constants
         self.lives = 3
         self.score = 0
+        self.hits = 0
         self.state = STATE_BALL_IN_PADDLE
 
         # Create objects
@@ -106,9 +109,10 @@ class Breakout:
                                 BALL_DIAMETER, BALL_DIAMETER)
 
         # Set ball to move using a random choice of direction (except down)
-        delta_x = random.randint(-5, 5)  # TODO: Seed option
-        delta_y = -5
-        self.ball_vel = [delta_x, delta_y]  # TODO: Variable ball speed; speedup
+        self.ball_speed = 5
+        delta_x = random.uniform(-1, 1) * self.ball_speed  # TODO: Seed option
+        delta_y = -1 * self.ball_speed
+        self.ball_vel = [delta_x, delta_y]
 
         self.create_bricks()
 
@@ -160,6 +164,16 @@ class Breakout:
                                         self.state == STATE_WON):
             self.init_game()
 
+    def update_ball_velocity(self, ball_vel):
+        """ Update the ball  velocity. """
+        if self.hits == 4:
+            self.ball_speed = 10
+            return -ball_vel * 2
+        elif self.hits == 12:
+            self.ball_speed = 15
+            return int(-ball_vel * 1.5)
+        return -ball_vel
+
     def move_ball(self):
         """ Move the ball object. """
 
@@ -199,7 +213,9 @@ class Breakout:
         # Check for collision with paddle
         if self.ball.colliderect(self.paddle):
             self.ball.top = PADDLE_Y - BALL_DIAMETER
-            self.ball_vel[1] = -self.ball_vel[1]
+            self.hits += 1
+            self.ball_vel[1] = self.update_ball_velocity(self.ball_vel[1])
+
         # Check for ball going below paddle y position
         elif self.ball.top > self.paddle.top:
             self.lives -= 1
