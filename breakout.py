@@ -162,7 +162,7 @@ class Breakout:
             self.init_game()
 
     def check_input(self):
-        """ Check for game inputs via keyboard. """
+        """ Check for game inputs via keyboard when in manual mode. """
 
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
@@ -182,6 +182,16 @@ class Breakout:
         elif keys[pygame.K_RETURN] and (self.state == STATE_GAME_OVER or
                                         self.state == STATE_WON):
             self.do_command('return')
+
+    def get_command(self, frame):
+        """ Decide command when in auto mode. """
+
+        if frame == 0:
+            self.do_command('space')
+        elif frame < 60:
+            self.do_command('left')
+        else:
+            self.do_command('right')
 
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
@@ -265,6 +275,7 @@ class Breakout:
         """ Run Breakout. """
 
         input_type = 'manual'
+        frame = 0  # TESTING
 
         # Start the game loop
         running = True
@@ -284,8 +295,7 @@ class Breakout:
             if input_type == 'manual':
                 self.check_input()
             elif input_type == 'auto':
-                pass
-                # self.get_command()
+                self.get_command(frame)  # TESTING
 
             # Check current game state
             if self.state == STATE_PLAYING:
@@ -315,6 +325,8 @@ class Breakout:
 
             self.show_stats()
             pygame.display.flip()
+            print(frame, end="\r", flush=True)  # TESTING
+            frame += 1  # TESTING
 
 
 def main():
