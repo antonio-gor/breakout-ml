@@ -51,7 +51,17 @@ class Brick:
         self.brick = pygame.Rect(x_ofs, y_ofs, BRICK_WIDTH, BRICK_HEIGHT)
         self.color = color
 
+        if color == RED:
+            self.score = 7
+        elif color == ORANGE:
+            self.score = 5
+        elif color == GREEN:
+            self.score = 3
+        else:
+            self.score = 1
+
     def draw(self, screen):
+        """ Draw the brick onto the given screen. """
         pygame.draw.rect(screen, self.color, self.brick)
 
 
@@ -177,7 +187,7 @@ class Breakout:
         for i, brick_line in enumerate(self.bricks):
             for _, brick in enumerate(brick_line):
                 if self.ball.colliderect(brick.brick):
-                    self.score += 3  # TODO: variable score by brick color
+                    self.score += brick.score
                     self.ball_vel[1] = -self.ball_vel[1]
                     self.bricks[i].remove(brick)
                     break
