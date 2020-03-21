@@ -138,31 +138,50 @@ class Breakout:
         """ Start the game by launching the ball. """
         self.state = STATE_PLAYING
 
+    def do_command(self, command):
+        """ Perform the command. """
+
+        # Check for left arrow key and update position
+        if command == 'left':
+            self.paddle.left -= PADDLE_SPEED
+            if self.paddle.left < 0:
+                self.paddle.left = 0
+
+        # Check for right arrow key and update position
+        if command == 'right':
+            self.paddle.right += PADDLE_SPEED
+            if self.paddle.left > MAX_PADDLE_X:
+                self.paddle.left = MAX_PADDLE_X
+
+        # Start the game by pressing SPACE if game is in init state
+        if command == 'space' and self.state == STATE_BALL_IN_PADDLE:
+            self.start_game()
+        # Restart the game by pressing RETURN if game is in game over state
+        elif command == 'return' and (self.state == STATE_GAME_OVER or
+                                      self.state == STATE_WON):
+            self.init_game()
+
     def check_input(self):
         """ Check for game inputs via keyboard. """
 
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
 
-        # Check for left arrow key and update position
+        # Check for left arrow key
         if keys[pygame.K_LEFT]:
-            self.paddle.left -= PADDLE_SPEED
-            if self.paddle.left < 0:
-                self.paddle.left = 0
+            self.do_command('left')
 
-        # Check for right arrow key and update position
+        # Check for right arrow key
         if keys[pygame.K_RIGHT]:
-            self.paddle.right += PADDLE_SPEED
-            if self.paddle.left > MAX_PADDLE_X:
-                self.paddle.left = MAX_PADDLE_X
+            self.do_command('right')
 
-        # Start the game by pressing ENTER if game is in init state
+        # Start the game by pressing SPACE if game is in init state
         if keys[pygame.K_SPACE] and self.state == STATE_BALL_IN_PADDLE:
-            self.start_game()
+            self.do_command('space')
         # Restart the game by pressing RETURN if game is in game over state
         elif keys[pygame.K_RETURN] and (self.state == STATE_GAME_OVER or
                                         self.state == STATE_WON):
-            self.init_game()
+            self.do_command('return')
 
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
@@ -245,6 +264,8 @@ class Breakout:
     def run(self):
         """ Run Breakout. """
 
+        input_type = 'manual'
+
         # Start the game loop
         running = True
         while running:
@@ -258,7 +279,13 @@ class Breakout:
                     sys.exit()
 
             self.screen.fill(BLACK)
-            self.check_input()
+
+            # Check for automatic or manual input
+            if input_type == 'manual':
+                self.check_input()
+            elif input_type == 'auto':
+                pass
+                # self.get_command()
 
             # Check current game state
             if self.state == STATE_PLAYING:
