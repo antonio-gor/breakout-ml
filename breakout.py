@@ -166,10 +166,10 @@ class Breakout:
 
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
-        if self.hits == 4:
+        if self.hits == 2:
             self.ball_speed = 10
             return -ball_vel * 2
-        elif self.hits == 12:
+        elif self.hits == 6:
             self.ball_speed = 15
             return int(-ball_vel * 1.5)
         return -ball_vel
