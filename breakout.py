@@ -5,9 +5,10 @@ import pygame
 
 # Screen Constants
 SCREEN_SIZE = 480, 640
+STATS_X, STATS_Y = 140, 10
 FPS = 60
 
-# Color constants
+# Color Constants
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -36,7 +37,7 @@ BRICK_LINES = 8
 BRICK_PER_LINE = 12
 BRICK_COLORS = [RED, RED, ORANGE, ORANGE, GREEN, GREEN, YELLOW, YELLOW]
 
-# State constants
+# State Constants
 STATE_BALL_IN_PADDLE = 0
 STATE_PLAYING = 1
 STATE_WON = 2
@@ -192,7 +193,7 @@ class Breakout:
         if self.font:
             info = f"SCORE: {self.score}   LIVES: {self.lives}"
             font_surface = self.font.render(info, False, WHITE)
-            self.screen.blit(font_surface, (140, 10))
+            self.screen.blit(font_surface, (STATS_X, STATS_Y))
 
     def show_message(self, message):
         """ Display game state messages. """
