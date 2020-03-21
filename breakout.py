@@ -18,23 +18,20 @@ GREEN = (0, 255, 0)
 CYAN = (0, 255, 255)
 
 # Ball Constants
-BALL_DIAMETER = 15  # TODO: Variable ball size
+BALL_DIAMETER = 15
 BALL_RADIUS = int(BALL_DIAMETER / 2)
 MAX_BALL_X = SCREEN_SIZE[0] - BALL_DIAMETER
 MAX_BALL_Y = SCREEN_SIZE[1] - BALL_DIAMETER
 
 # Paddle Constant
-PADDLE_WIDTH = 40  # TODO: Variable paddle width
-PADDLE_HEIGHT = 8
+PADDLE_WIDTH, PADDLE_HEIGHT = 40, 8
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 PADDLE_Y = SCREEN_SIZE[1] - PADDLE_HEIGHT - 10
 PADDLE_SPEED = 5
 
 # Brick Constants
-BRICK_WIDTH = 30
-BRICK_HEIGHT = 6
-BRICK_LINES = 8
-BRICK_PER_LINE = 12
+BRICK_WIDTH, BRICK_HEIGHT = 30, 6
+BRICK_LINES, BRICK_PER_LINE = 8, 12
 BRICK_COLORS = [RED, RED, ORANGE, ORANGE, GREEN, GREEN, YELLOW, YELLOW]
 
 # State Constants
@@ -47,18 +44,11 @@ STATE_GAME_OVER = 3
 class Brick:
     """ Class for brick objects. """
 
-    def __init__(self, x_ofs, y_ofs, color):
-        self.brick = pygame.Rect(x_ofs, y_ofs, BRICK_WIDTH, BRICK_HEIGHT)
+    def __init__(self, x_pos, y_pos, color):
+        self.scores = {YELLOW: 1, GREEN: 3, ORANGE: 5, RED: 7}
+        self.brick = pygame.Rect(x_pos, y_pos, BRICK_WIDTH, BRICK_HEIGHT)
         self.color = color
-
-        if color == RED:
-            self.score = 7
-        elif color == ORANGE:
-            self.score = 5
-        elif color == GREEN:
-            self.score = 3
-        else:
-            self.score = 1
+        self.score = self.scores[color]
 
     def draw(self, screen):
         """ Draw the brick onto the given screen. """
@@ -71,25 +61,16 @@ class Breakout:
     def __init__(self):
         pygame.init()
 
-        # Set pygame window and title
+        # Set pygame clock, window, title, and font
+        self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         self.font = pygame.font.Font(None, 30)
         pygame.display.set_caption("Breakout")
 
-        # Create clock (to lock framerate at a constant value later)
-        self.clock = pygame.time.Clock()
-
         # Create the game objects and containers
-        self.lives = None
-        self.score = None
-        self.hits = None
-        self.state = None
-
-        self.bricks = None
-        self.paddle = None
-        self.ball = None
-        self.ball_vel = None
-        self.ball_speed = None
+        self.lives, self.score, self.hits, self.state = None, None, None, None
+        self.bricks, self.num_bricks, self.paddle = None, None, None
+        self.ball, self.ball_vel, self.ball_speed = None, None, None
 
         self.init_game()
 
@@ -97,42 +78,36 @@ class Breakout:
         """ Initialize the game state. """
 
         # Set constants
-        self.lives = 3
-        self.score = 0
-        self.hits = 0
+        self.lives, self.score, self.hits = 3, 0, 0
         self.state = STATE_BALL_IN_PADDLE
 
         # Create objects
         self.bricks = []
+        self.num_bricks = 0
+        self.create_bricks()
         self.paddle = pygame.Rect(300, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT)
         self.ball = pygame.Rect(300, PADDLE_Y - BALL_DIAMETER,
                                 BALL_DIAMETER, BALL_DIAMETER)
 
         # Set ball to move using a random choice of direction (except down)
-        self.ball_speed = 5
-        delta_x = random.uniform(-1, 1) * self.ball_speed  # TODO: Seed option
-        delta_y = -1 * self.ball_speed
-        self.ball_vel = [delta_x, delta_y]
-
-        self.create_bricks()
+        self.ball_vel = [random.uniform(-5, 5), -5]  # TODO: Seed option
 
     def create_bricks(self):
         """ Create all bricks. """
 
         # Set brick position and create append to bricks list
-        y_ofs = 85
-        x_ofs = 5
+        x_pos, y_pos = 5, 85
 
         # Create bricks (from top left to bottom right)
         for i in range(BRICK_LINES):
             brick_line = []
             for _ in range(BRICK_PER_LINE):
-                brick = Brick(x_ofs, y_ofs, BRICK_COLORS[i])
-                brick_line.append(brick)
-                x_ofs += BRICK_WIDTH + 10
+                brick_line.append(Brick(x_pos, y_pos, BRICK_COLORS[i]))
+                self.num_bricks += 1
+                x_pos += BRICK_WIDTH + 10
             self.bricks.append(brick_line)
-            x_ofs = 5
-            y_ofs += BRICK_HEIGHT + 5
+            x_pos = 5
+            y_pos += BRICK_HEIGHT + 5
 
     def start_game(self):
         """ Start the game by launching the ball. """
@@ -167,11 +142,9 @@ class Breakout:
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
 
-        # Check for left arrow key
+        # Check for arrow key
         if keys[pygame.K_LEFT]:
             self.do_command('left')
-
-        # Check for right arrow key
         if keys[pygame.K_RIGHT]:
             self.do_command('right')
 
@@ -183,23 +156,16 @@ class Breakout:
                                         self.state == STATE_WON):
             self.do_command('return')
 
-    def get_command(self, frame):
+    def get_command(self):
         """ Decide command when in auto mode. """
-
-        if frame == 0:
-            self.do_command('space')
-        elif frame < 60:
-            self.do_command('left')
-        else:
-            self.do_command('right')
+        pass
 
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
+
         if self.hits == 2:
-            self.ball_speed = 10
             return -ball_vel * 2
         elif self.hits == 6:
-            self.ball_speed = 15
             return int(-ball_vel * 1.5)
         return -ball_vel
 
@@ -224,25 +190,26 @@ class Breakout:
             self.ball_vel[1] = -self.ball_vel[1]
 
     def handle_collision(self):
-        """ Handle ball collision event. """
+        """ Handle ball collision events. """
 
         # Check for collision with brick
         for i, brick_line in enumerate(self.bricks):
             for _, brick in enumerate(brick_line):
                 if self.ball.colliderect(brick.brick):
                     self.score += brick.score
+                    self.num_bricks -= 1
                     self.ball_vel[1] = -self.ball_vel[1]
                     self.bricks[i].remove(brick)
                     break
 
         # Check for won game
-        if len(self.bricks) == 0:
+        if self.num_bricks == 0:
             self.state = STATE_WON
 
         # Check for collision with paddle
         if self.ball.colliderect(self.paddle):
-            self.ball.top = PADDLE_Y - BALL_DIAMETER
             self.hits += 1
+            self.ball.top = PADDLE_Y - BALL_DIAMETER
             self.ball_vel[1] = self.update_ball_velocity(self.ball_vel[1])
 
         # Check for ball going below paddle y position
@@ -274,14 +241,10 @@ class Breakout:
     def run(self):
         """ Run Breakout. """
 
-        input_type = 'manual'
-        frame = 0  # TESTING
-
         # Start the game loop
+        input_type = 'manual'
         running = True
         while running:
-            # Set the framerate
-            self.clock.tick(FPS)
 
             # Check for quit game
             for event in pygame.event.get():
@@ -289,13 +252,15 @@ class Breakout:
                     pygame.quit()
                     sys.exit()
 
+            # Set the framerate and screen
+            self.clock.tick(FPS)
             self.screen.fill(BLACK)
 
             # Check for automatic or manual input
             if input_type == 'manual':
                 self.check_input()
             elif input_type == 'auto':
-                self.get_command(frame)  # TESTING
+                self.get_command()
 
             # Check current game state
             if self.state == STATE_PLAYING:
@@ -310,10 +275,8 @@ class Breakout:
             elif self.state == STATE_WON:
                 self.show_message("YOU WON! PRESS ENTER TO PLAY AGAIN")
 
-            # Draw paddle
+            # Draw paddle and ball
             pygame.draw.rect(self.screen, CYAN, self.paddle)
-
-            # Draw ball
             pygame.draw.circle(self.screen, WHITE, (
                 self.ball.left + BALL_RADIUS,
                 self.ball.top + BALL_RADIUS), BALL_RADIUS)
@@ -325,8 +288,6 @@ class Breakout:
 
             self.show_stats()
             pygame.display.flip()
-            print(frame, end="\r", flush=True)  # TESTING
-            frame += 1  # TESTING
 
 
 def main():
