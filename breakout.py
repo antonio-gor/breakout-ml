@@ -6,7 +6,7 @@ import pygame
 # Screen Constants
 SCREEN_SIZE = 480, 640
 STATS_X, STATS_Y = 140, 10
-FPS = 60 * 100
+FPS = 60
 
 # Color Constants
 BLACK = (0, 0, 0)
@@ -247,6 +247,12 @@ class Breakout:
         if self.ball.colliderect(self.paddle):
             self.hits += 1
             self.ball.top = PADDLE_Y - BALL_DIAMETER
+            if (self.ball.center[0] >= self.paddle.left
+                    and self.ball.center[0] < self.paddle.center[0] - 10):
+                self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0]+2)
+            elif (self.ball.center[0] <= self.paddle.right
+                  and self.ball.center[0] > self.paddle.center[0] + 10):
+                self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0]-2)
             self.ball_vel[1] = self.update_ball_velocity(self.ball_vel[1])
 
         # Check for ball going below paddle y position
