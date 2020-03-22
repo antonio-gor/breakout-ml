@@ -6,7 +6,7 @@ import pygame
 # Screen Constants
 SCREEN_SIZE = 480, 640
 STATS_X, STATS_Y = 140, 10
-FPS = 60
+FPS = 60 * 100
 
 # Color Constants
 BLACK = (0, 0, 0)
@@ -93,7 +93,7 @@ class Player:
             else:
                 game.do_command('left')
         else:
-            game.do_command('enter')
+            game.do_command('return')
 
     def ql_input(self, game):
         """ . """
