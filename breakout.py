@@ -50,7 +50,53 @@ class Player:
     """
 
     def __init__(self, player_type):
-        self.type = player_type
+        self.player_type = player_type
+        self.input_methods = {'manual': self.manual_input,
+                              'naive': self.naive_input,
+                              'ql': self.ql_input}
+
+    def get_command(self, game):
+        """ Call the appropriate command input method. """
+        method = self.input_methods[self.player_type]
+        method(game)
+
+    def manual_input(self, game):
+        """ Check for game inputs via keyboard when in manual mode. """
+
+        # Get the key that is pressed
+        keys = pygame.key.get_pressed()
+
+        # Check for arrow key
+        if keys[pygame.K_LEFT]:
+            game.do_command('left')
+        if keys[pygame.K_RIGHT]:
+            game.do_command('right')
+
+        # Start the game by pressing SPACE if game is in init state
+        if keys[pygame.K_SPACE] and game.state == STATE_BALL_IN_PADDLE:
+            game.do_command('space')
+        # Restart the game by pressing RETURN if game is in game over state
+        elif keys[pygame.K_RETURN] and (game.state == STATE_GAME_OVER or
+                                        game.state == STATE_WON):
+            game.do_command('return')
+
+    def naive_input(self, game):
+        """ The naive AI follows the ball's horizontal position. """
+
+        if game.state == 0:
+            game.do_command('space')
+        elif game.state == 1:
+            ball_pos, paddle_pos = game.ball.center, game.paddle.center
+
+            if ball_pos > paddle_pos:
+                game.do_command('right')
+            else:
+                game.do_command('left')
+        else:
+            game.do_command('enter')
+
+    def ql_input(self, game):
+        """ . """
 
 
 class Brick:
@@ -72,6 +118,7 @@ class Breakout:
 
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
+        self.player = Player(player_type)
 
         # Set pygame clock, window, title, and font
         self.clock = pygame.time.Clock()
@@ -150,29 +197,6 @@ class Breakout:
                                       self.state == STATE_WON):
             self.init_game()
 
-    def check_input(self):
-        """ Check for game inputs via keyboard when in manual mode. """
-
-        # Get the key that is pressed
-        keys = pygame.key.get_pressed()
-
-        # Check for arrow key
-        if keys[pygame.K_LEFT]:
-            self.do_command('left')
-        if keys[pygame.K_RIGHT]:
-            self.do_command('right')
-
-        # Start the game by pressing SPACE if game is in init state
-        if keys[pygame.K_SPACE] and self.state == STATE_BALL_IN_PADDLE:
-            self.do_command('space')
-        # Restart the game by pressing RETURN if game is in game over state
-        elif keys[pygame.K_RETURN] and (self.state == STATE_GAME_OVER or
-                                        self.state == STATE_WON):
-            self.do_command('return')
-
-    def get_command(self):
-        """ Decide command when in auto mode. """
-
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
 
@@ -233,6 +257,21 @@ class Breakout:
             else:
                 self.state = STATE_GAME_OVER
 
+    def handle_current_state(self):
+        """ Get and handle action based on current game state. """
+
+        if self.state == STATE_PLAYING:
+            self.move_ball()
+            self.handle_collision()
+        elif self.state == STATE_BALL_IN_PADDLE:
+            self.ball.left = self.paddle.left + self.paddle.width / 2
+            self.ball.top = self.paddle.top - self.ball.height
+            self.show_message("PRESS SPACE TO LAUNCH THE BALL")
+        elif self.state == STATE_GAME_OVER:
+            self.show_message("GAME OVER. PRESS ENTER TO PLAY AGAIN")
+        elif self.state == STATE_WON:
+            self.show_message("YOU WON! PRESS ENTER TO PLAY AGAIN")
+
     def show_stats(self):
         """ Display game state information. """
 
@@ -255,7 +294,6 @@ class Breakout:
         """ Run Breakout. """
 
         # Start the game loop
-        input_type = 'manual'
         running = True
         while running:
 
@@ -269,24 +307,11 @@ class Breakout:
             self.clock.tick(FPS)
             self.screen.fill(BLACK)
 
-            # Check for automatic or manual input
-            if input_type == 'manual':
-                self.check_input()
-            elif input_type == 'auto':
-                self.get_command()
+            # Get command from player
+            self.player.get_command(self)
 
             # Check current game state
-            if self.state == STATE_PLAYING:
-                self.move_ball()
-                self.handle_collision()
-            elif self.state == STATE_BALL_IN_PADDLE:
-                self.ball.left = self.paddle.left + self.paddle.width / 2
-                self.ball.top = self.paddle.top - self.ball.height
-                self.show_message("PRESS SPACE TO LAUNCH THE BALL")
-            elif self.state == STATE_GAME_OVER:
-                self.show_message("GAME OVER. PRESS ENTER TO PLAY AGAIN")
-            elif self.state == STATE_WON:
-                self.show_message("YOU WON! PRESS ENTER TO PLAY AGAIN")
+            self.handle_current_state()
 
             # Draw paddle and ball
             pygame.draw.rect(self.screen, CYAN, self.paddle)
@@ -305,9 +330,8 @@ class Breakout:
 
 def get_args():
     """ Get the arguements. """
-
     args = sys.argv
-    player_type, seed = None, None
+    player_type, seed = 'manual', None  # Default values
     if len(args) > 1:
         player_type = args[1]
     if len(args) > 2:
