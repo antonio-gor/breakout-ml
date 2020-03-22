@@ -226,6 +226,18 @@ class Breakout:
             self.ball.top = 0
             self.ball_vel[1] = -self.ball_vel[1]
 
+    def nudge_ball(self):
+        """ Nudge ball if it collides on a paddle edge. """
+
+        ball_center = self.ball.center[0]
+        paddle_center = self.paddle.center[0]
+        paddle_left, paddle_right = self.paddle.left, self.paddle.right
+
+        if paddle_left <= ball_center < paddle_center - 10:
+            self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0] + 2)
+        elif paddle_right >= ball_center > paddle_center + 10:
+            self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0] - 2)
+
     def handle_collision(self):
         """ Handle ball collision events. """
 
@@ -247,13 +259,8 @@ class Breakout:
         if self.ball.colliderect(self.paddle):
             self.hits += 1
             self.ball.top = PADDLE_Y - BALL_DIAMETER
-            if (self.ball.center[0] >= self.paddle.left
-                    and self.ball.center[0] < self.paddle.center[0] - 10):
-                self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0]+2)
-            elif (self.ball.center[0] <= self.paddle.right
-                  and self.ball.center[0] > self.paddle.center[0] + 10):
-                self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0]-2)
             self.ball_vel[1] = self.update_ball_velocity(self.ball_vel[1])
+            self.nudge_ball()
 
         # Check for ball going below paddle y position
         elif self.ball.top > self.paddle.top:
