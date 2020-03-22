@@ -70,7 +70,7 @@ class Brick:
 class Breakout:
     """ Class for Breakout game. """
 
-    def __init__(self, seed=None):
+    def __init__(self, player_type='manual', seed=None):
         pygame.init()
 
         # Set pygame clock, window, title, and font
@@ -303,9 +303,21 @@ class Breakout:
             pygame.display.flip()
 
 
+def get_args():
+    """ Get the arguements. """
+
+    args = sys.argv
+    player_type, seed = None, None
+    if len(args) > 1:
+        player_type = args[1]
+    if len(args) > 2:
+        seed = args[2]
+    return player_type, seed
+
 def main():
     """ Init and run pygame. """
-    Breakout().run()
+    player_type, seed = get_args()
+    Breakout(player_type, seed).run()
 
 if __name__ == "__main__":
     main()
