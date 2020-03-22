@@ -41,6 +41,18 @@ STATE_WON = 2
 STATE_GAME_OVER = 3
 
 
+class Player:
+    """
+    Breackout player class. There are three types:
+        Manual: manual player controlled via the keyboard.
+        Naive_AI: explicit AI that follows the ball's horizontal position.
+        QL_AI: AI trained via Q-Learning algorithms
+    """
+
+    def __init__(self, player_type):
+        self.type = player_type
+
+
 class Brick:
     """ Class for brick objects. """
 
@@ -58,7 +70,7 @@ class Brick:
 class Breakout:
     """ Class for Breakout game. """
 
-    def __init__(self):
+    def __init__(self, seed=None):
         pygame.init()
 
         # Set pygame clock, window, title, and font
@@ -72,9 +84,9 @@ class Breakout:
         self.bricks, self.num_bricks, self.paddle = None, None, None
         self.ball, self.ball_vel, self.ball_speed = None, None, None
 
-        self.init_game()
+        self.init_game(seed)
 
-    def init_game(self):
+    def init_game(self, seed=None):
         """ Initialize the game state. """
 
         # Set constants
@@ -89,8 +101,10 @@ class Breakout:
         self.ball = pygame.Rect(300, PADDLE_Y - BALL_DIAMETER,
                                 BALL_DIAMETER, BALL_DIAMETER)
 
-        # Set ball to move using a random choice of direction (except down)
-        self.ball_vel = [random.uniform(-5, 5), -5]  # TODO: Seed option
+        # Set ball to move using a random choice of direction (upwards)
+        if seed:
+            random.seed(seed)
+        self.ball_vel = [random.uniform(-5, 5), -5]
 
     def create_bricks(self):
         """ Create all bricks. """
@@ -158,7 +172,6 @@ class Breakout:
 
     def get_command(self):
         """ Decide command when in auto mode. """
-        pass
 
     def update_ball_velocity(self, ball_vel):
         """ Update the ball  velocity. """
