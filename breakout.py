@@ -28,7 +28,7 @@ MAX_BALL_Y = SCREEN_SIZE[1] - BALL_DIAMETER
 PADDLE_WIDTH, PADDLE_HEIGHT = 75, 8
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 PADDLE_Y = SCREEN_SIZE[1] - PADDLE_HEIGHT - 10
-PADDLE_SPEED = 12
+PADDLE_SPEED = 18
 
 # Brick Constants
 BRICK_WIDTH, BRICK_HEIGHT = 30, 6
@@ -60,7 +60,7 @@ class Breakout:
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
         self.player_type = player_type
-        self.player = player.CLASS[player_type]()
+        self.player = player.Player().type[player_type]()
 
         # Set pygame clock, window, title, and font
         self.clock = pygame.time.Clock()
@@ -93,7 +93,7 @@ class Breakout:
         # Set ball to move using a random choice of direction (upwards)
         if seed:
             random.seed(seed)
-        self.ball_vel = [random.uniform(-6, 6), -8]
+        self.ball_vel = [random.uniform(-8, 8), -12]
 
     def create_bricks(self):
         """ Create all bricks. """
@@ -289,8 +289,6 @@ def main():
     if player_type in ['manual', 'naive']:
         while True:
             game.run()
-    else:
-        game.player.reset(game)
 
 if __name__ == "__main__":
     main()

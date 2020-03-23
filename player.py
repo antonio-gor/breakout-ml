@@ -11,7 +11,7 @@ import breakout as bo
 class Player():
     """ General player class. """
     def __init__(self):
-        pass
+        self.type = {'manual': ManualPlayer, 'naive': NaiveAI, 'ql': QLAI}
 
 class ManualPlayer(Player):
     """ Manual player class. """
@@ -19,20 +19,22 @@ class ManualPlayer(Player):
         """ Check for game inputs via keyboard when in manual mode. """
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
+        command = ''
 
         # Check for arrow key
         if keys[pygame.K_LEFT]:
-            return 'left'
+            command = 'left'
         if keys[pygame.K_RIGHT]:
-            return 'right'
+            command = 'right'
 
         # Start the game by pressing SPACE if game is in init state
         if keys[pygame.K_SPACE] and game.state == bo.STATE_BALL_IN_PADDLE:
-            return 'space'
+            command = 'space'
         # Restart the game by pressing RETURN if game is in game over state
         if keys[pygame.K_RETURN] and (game.state == bo.STATE_GAME_OVER or
-                                        game.state == bo.STATE_WON):
-            return 'return'
+                                      game.state == bo.STATE_WON):
+            command = 'return'
+        return command
 
 
 class NaiveAI(Player):
@@ -40,47 +42,22 @@ class NaiveAI(Player):
     def get_command(self, game):
         """ The naive AI follows the ball's horizontal position. """
         ball_pos, paddle_pos = game.ball.center, game.paddle.center
-
+        command = ''
+        
         if game.state == 0:
-            return 'space'
+            command = 'space'
         if game.state == 1 and ball_pos > paddle_pos:
-            return 'right'
+            command = 'right'
         if game.state == 1 and ball_pos < paddle_pos:
-            return 'left'
-        return 'return'
+            command = 'left'
+        if game.state in (2, 3):
+            command = 'return'
+        return command
 
 
 class QLAI(Player):
     """ AI player class for use with QL algorithms. """
-    action_space_size = 2
-    observation_space_size = 101
-
-    def reset(self, game):
-        game.init_game(lives=1, state=bo.STATE_PLAYING)
-        self.run(game)
-
-    def run(self, game):
-        """ . """
-        for _ in range(1000):
-            game.run()
-
     def get_command(self, game):
-        return 'left'
-
-    def step(self, game):
-        """ Recieve command from QL-Learning Model. """
-        state = game.get_state()
-        # command = self.get_command(state)
-        # game.do_command(command)
-
-
-CLASS = {'manual': ManualPlayer, 'naive': NaiveAI, 'ql': QLAI}
-
-
-"""
-env.reset(): state -> game.init_game()
-env.step(action): 
-
-action_size: env.action_space_size # Number of actions
-state_size: env.observation_space_size # Length of states
-"""
+        """ . """
+        command = ''
+        return command
