@@ -1,4 +1,4 @@
-""" Breakout """
+""" Breakout (inspired by Atari Breakout) """
 import sys
 import random
 import pygame
@@ -28,7 +28,7 @@ MAX_BALL_Y = SCREEN_SIZE[1] - BALL_DIAMETER
 PADDLE_WIDTH, PADDLE_HEIGHT = 75, 8
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 PADDLE_Y = SCREEN_SIZE[1] - PADDLE_HEIGHT - 10
-PADDLE_SPEED = 8
+PADDLE_SPEED = 12
 
 # Brick Constants
 BRICK_WIDTH, BRICK_HEIGHT = 30, 6
@@ -59,7 +59,8 @@ class Breakout:
     """ Class for Breakout game. """
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
-        self.player = player.Player(player_type)
+        self.player_type = player_type
+        self.player = player.CLASS[player_type]
 
         # Set pygame clock, window, title, and font
         self.clock = pygame.time.Clock()
@@ -96,7 +97,6 @@ class Breakout:
 
     def create_bricks(self):
         """ Create all bricks. """
-
         # Set brick position and create append to bricks list
         x_pos, y_pos = 5, 85
 
@@ -120,7 +120,6 @@ class Breakout:
 
     def do_command(self, command):
         """ Perform the command. """
-
         # Check for left arrow key and update position
         if command == 'left':
             self.paddle.left -= PADDLE_SPEED
@@ -143,7 +142,6 @@ class Breakout:
 
     def move_ball(self):
         """ Move the ball object. """
-
         # Update ball position
         self.ball.left += self.ball_vel[0]
         self.ball.top += self.ball_vel[1]
@@ -168,7 +166,6 @@ class Breakout:
 
     def nudge_ball(self):
         """ Nudge ball if it collides on a paddle edge. """
-
         ball_center, paddle_center = self.ball.center[0], self.paddle.center[0]
         paddle_left, paddle_right = self.paddle.left, self.paddle.right
         h_vel = self.ball_vel[0]
@@ -180,7 +177,6 @@ class Breakout:
 
     def handle_collision(self):
         """ Handle ball collision events. """
-
         # Check for collision with brick
         for i, brick_line in enumerate(self.bricks):
             for j, brick in enumerate(brick_line):
@@ -213,7 +209,6 @@ class Breakout:
 
     def handle_current_state(self):
         """ Get and handle action based on current game state. """
-
         if self.state == STATE_PLAYING:
             self.move_ball()
             self.handle_collision()
@@ -228,7 +223,6 @@ class Breakout:
 
     def show_stats(self):
         """ Display game state information. """
-
         if self.font:
             info = f"SCORE: {self.score}   LIVES: {self.lives}"
             font_surface = self.font.render(info, False, WHITE)
@@ -236,7 +230,6 @@ class Breakout:
 
     def show_message(self, message):
         """ Display game state messages. """
-
         if self.font:
             size = self.font.size(message)
             font_surface = self.font.render(message, False, WHITE)
@@ -261,7 +254,7 @@ class Breakout:
 
         self.clock.tick(FPS)
         self.screen.fill(BLACK)
-        self.player.get_command(self)
+        player.get_command(self, self.player, self.player_type)
         self.handle_current_state()
 
         pygame.draw.rect(self.screen, CYAN, self.paddle)
@@ -292,9 +285,9 @@ def main():
     game = Breakout(player_type, seed)
 
     # Start the game loop
-    running = True
-    while running:
-        game.run()
+    if player_type in ['manual', 'naive']:
+        while True:
+            game.run()
 
 if __name__ == "__main__":
     main()

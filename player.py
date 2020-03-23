@@ -1,29 +1,16 @@
-""" Player classes for Breakout. """
+"""
+Breackout player classes. There are three types:
+    Manual: manual player controlled via the keyboard.
+    Naive_AI: explicit AI that follows the ball's horizontal position.
+    QL_AI: AI trained via Q-Learning algorithms
+"""
 import pygame
 import breakout as bo
 
-class Player:
-    """
-    Breackout player class. There are three types:
-        Manual: manual player controlled via the keyboard.
-        Naive_AI: explicit AI that follows the ball's horizontal position.
-        QL_AI: AI trained via Q-Learning algorithms
-    """
-    def __init__(self, player_type):
-        self.player_type = player_type
-        self.input_methods = {'manual': ManualPlayer.input,
-                              'naive': NaiveAI.input,
-                              'ql': QLAI.input}
 
-    def get_command(self, game):
-        """ Call the appropriate command input method. """
-        method = self.input_methods[self.player_type]
-        method(self, game)
-
-
-class ManualPlayer(Player):
+class ManualPlayer():
     """ Manual player class. """
-    def input(self, game):
+    def get_command(self, game):
         """ Check for game inputs via keyboard when in manual mode. """
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
@@ -43,9 +30,9 @@ class ManualPlayer(Player):
             game.do_command('return')
 
 
-class NaiveAI(Player):
+class NaiveAI():
     """ Naive AI player class. """
-    def input(self, game):
+    def get_command(self, game):
         """ The naive AI follows the ball's horizontal position. """
         ball_pos, paddle_pos = game.ball.center, game.paddle.center
 
@@ -59,10 +46,25 @@ class NaiveAI(Player):
             game.do_command('return')
 
 
-class QLAI(Player):
+class QLAI():
     """ AI player class for use with QL algorithms. """
-    def input(self, game):
+    def get_command(self, game):
         """ Recieve command from QL-Learning Model. """
         state = game.get_state()
+        print(state)
         # command = self.get_command(state)
         # game.do_command(command)
+
+    def run(self, game):
+        """ . """
+        game.run()
+
+
+CLASS = {'manual': ManualPlayer(), 'naive': NaiveAI(), 'ql': QLAI()}
+INPUT = {'manual': ManualPlayer.get_command,
+         'naive': NaiveAI.get_command,
+         'ql': QLAI.get_command}
+
+def get_command(game, player, player_type):
+    """ Get command from appropriate command method."""
+    return INPUT[player_type](player, game)
