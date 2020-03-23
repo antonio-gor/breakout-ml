@@ -48,21 +48,22 @@ class Player:
         Naive_AI: explicit AI that follows the ball's horizontal position.
         QL_AI: AI trained via Q-Learning algorithms
     """
-
     def __init__(self, player_type):
         self.player_type = player_type
-        self.input_methods = {'manual': self.manual_input,
-                              'naive': self.naive_input,
-                              'ql': self.ql_input}
+        self.input_methods = {'manual': ManualPlayer.input,
+                              'naive': NaiveAI.input,
+                              'ql': QLAI.input}
 
     def get_command(self, game):
         """ Call the appropriate command input method. """
         method = self.input_methods[self.player_type]
-        method(game)
+        method(self, game)
 
-    def manual_input(self, game):
+
+class ManualPlayer(Player):
+    """ Manual player class. """
+    def input(self, game):
         """ Check for game inputs via keyboard when in manual mode. """
-
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
 
@@ -80,9 +81,11 @@ class Player:
                                         game.state == STATE_WON):
             game.do_command('return')
 
-    def naive_input(self, game):
-        """ The naive AI follows the ball's horizontal position. """
 
+class NaiveAI(Player):
+    """ Naive AI player class. """
+    def input(self, game):
+        """ The naive AI follows the ball's horizontal position. """
         ball_pos, paddle_pos = game.ball.center, game.paddle.center
 
         if game.state == 0:
@@ -94,20 +97,18 @@ class Player:
         else:
             game.do_command('return')
 
-    def ql_input(self, game):
-        """ Recieve command from QL-Learning Model. """
-        state = game.output_state()
-        command = self.get_ql_command(state)
-        game.do_command(command)
 
-    def get_ql_command(self, state):
-        """ Choose a command given the game state. """
-        return 'space'
+class QLAI(Player):
+    """ AI player class for use with QL algorithms. """
+    def input(self, game):
+        """ Recieve command from QL-Learning Model. """
+        state = game.get_state()
+        # command = self.get_command(state)
+        # game.do_command(command)
 
 
 class Brick:
     """ Class for brick objects. """
-
     def __init__(self, x_pos, y_pos, color):
         self.scores = {YELLOW: 1, GREEN: 3, ORANGE: 5, RED: 7}
         self.brick = pygame.Rect(x_pos, y_pos, BRICK_WIDTH, BRICK_HEIGHT)
@@ -121,7 +122,6 @@ class Brick:
 
 class Breakout:
     """ Class for Breakout game. """
-
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
         self.player = Player(player_type)
@@ -141,7 +141,6 @@ class Breakout:
 
     def init_game(self, seed=None):
         """ Initialize the game state. """
-
         # Set constants
         self.lives, self.score, self.hits = 3, 0, 0
         self.state = STATE_BALL_IN_PADDLE
@@ -310,7 +309,7 @@ class Breakout:
             y_val = (SCREEN_SIZE[1] - size[1]) / 2
             self.screen.blit(font_surface, (x_val, y_val))
 
-    def output_state(self):
+    def get_state(self):
         """ Outputs game state info. """
         brick_list = [item for sublist in self.bricks_bool for item in sublist]
         return [self.ball.center[0], self.ball.center[1],
@@ -319,31 +318,27 @@ class Breakout:
 
     def run(self):
         """ Run Breakout. """
+        # Check for quit game
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-        # Start the game loop
-        running = True
-        while running:
-            # Check for quit game
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+        self.clock.tick(FPS)
+        self.screen.fill(BLACK)
+        self.player.get_command(self)
+        self.handle_current_state()
 
-            self.clock.tick(FPS)
-            self.screen.fill(BLACK)
-            self.player.get_command(self)
-            self.handle_current_state()
+        pygame.draw.rect(self.screen, CYAN, self.paddle)
+        pygame.draw.circle(self.screen, WHITE, (
+            self.ball.left + BALL_RADIUS,
+            self.ball.top + BALL_RADIUS), BALL_RADIUS)
+        for _, brick_line in enumerate(self.bricks):
+            for _, brick in enumerate(brick_line):
+                brick.draw(self.screen)
 
-            pygame.draw.rect(self.screen, CYAN, self.paddle)
-            pygame.draw.circle(self.screen, WHITE, (
-                self.ball.left + BALL_RADIUS,
-                self.ball.top + BALL_RADIUS), BALL_RADIUS)
-            for _, brick_line in enumerate(self.bricks):
-                for _, brick in enumerate(brick_line):
-                    brick.draw(self.screen)
-
-            self.show_stats()
-            pygame.display.flip()
+        self.show_stats()
+        pygame.display.flip()
 
 
 def get_args():
@@ -359,7 +354,12 @@ def get_args():
 def main():
     """ Init and run pygame. """
     player_type, seed = get_args()
-    Breakout(player_type, seed).run()
+    game = Breakout(player_type, seed)
+
+    # Start the game loop
+    running = True
+    while running:
+        game.run()
 
 if __name__ == "__main__":
     main()
