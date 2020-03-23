@@ -60,7 +60,7 @@ class Breakout:
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
         self.player_type = player_type
-        self.player = player.CLASS[player_type]
+        self.player = player.CLASS[player_type]()
 
         # Set pygame clock, window, title, and font
         self.clock = pygame.time.Clock()
@@ -75,11 +75,11 @@ class Breakout:
 
         self.init_game(seed)
 
-    def init_game(self, seed=None):
+    def init_game(self, seed=None, lives=3, state=STATE_BALL_IN_PADDLE):
         """ Initialize the game state. """
         # Set constants
-        self.lives, self.score, self.hits = 3, 0, 0
-        self.state = STATE_BALL_IN_PADDLE
+        self.lives, self.score, self.hits = lives, 0, 0
+        self.state = state
 
         # Create objects
         self.bricks = []
@@ -254,7 +254,8 @@ class Breakout:
 
         self.clock.tick(FPS)
         self.screen.fill(BLACK)
-        self.player.get_command(self)
+        command = self.player.get_command(self)
+        self.do_command(command)
         self.handle_current_state()
 
         pygame.draw.rect(self.screen, CYAN, self.paddle)
@@ -288,6 +289,8 @@ def main():
     if player_type in ['manual', 'naive']:
         while True:
             game.run()
+    else:
+        game.player.reset(game)
 
 if __name__ == "__main__":
     main()

@@ -22,17 +22,17 @@ class ManualPlayer(Player):
 
         # Check for arrow key
         if keys[pygame.K_LEFT]:
-            game.do_command('left')
+            return 'left'
         if keys[pygame.K_RIGHT]:
-            game.do_command('right')
+            return 'right'
 
         # Start the game by pressing SPACE if game is in init state
         if keys[pygame.K_SPACE] and game.state == bo.STATE_BALL_IN_PADDLE:
-            game.do_command('space')
+            return 'space'
         # Restart the game by pressing RETURN if game is in game over state
-        elif keys[pygame.K_RETURN] and (game.state == bo.STATE_GAME_OVER or
+        if keys[pygame.K_RETURN] and (game.state == bo.STATE_GAME_OVER or
                                         game.state == bo.STATE_WON):
-            game.do_command('return')
+            return 'return'
 
 
 class NaiveAI(Player):
@@ -42,13 +42,12 @@ class NaiveAI(Player):
         ball_pos, paddle_pos = game.ball.center, game.paddle.center
 
         if game.state == 0:
-            game.do_command('space')
-        elif game.state == 1 and ball_pos > paddle_pos:
-            game.do_command('right')
-        elif game.state == 1 and ball_pos < paddle_pos:
-            game.do_command('left')
-        else:
-            game.do_command('return')
+            return 'space'
+        if game.state == 1 and ball_pos > paddle_pos:
+            return 'right'
+        if game.state == 1 and ball_pos < paddle_pos:
+            return 'left'
+        return 'return'
 
 
 class QLAI(Player):
@@ -56,22 +55,30 @@ class QLAI(Player):
     action_space_size = 2
     observation_space_size = 101
 
+    def reset(self, game):
+        game.init_game(lives=1, state=bo.STATE_PLAYING)
+        self.run(game)
+
+    def run(self, game):
+        """ . """
+        for _ in range(1000):
+            game.run()
+
     def get_command(self, game):
+        return 'left'
+
+    def step(self, game):
         """ Recieve command from QL-Learning Model. """
         state = game.get_state()
         # command = self.get_command(state)
         # game.do_command(command)
 
-    def run(self, game):
-        """ . """
-        game.run()
 
-
-CLASS = {'manual': ManualPlayer(), 'naive': NaiveAI(), 'ql': QLAI()}
+CLASS = {'manual': ManualPlayer, 'naive': NaiveAI, 'ql': QLAI}
 
 
 """
-env.reset(): state
+env.reset(): state -> game.init_game()
 env.step(action): 
 
 action_size: env.action_space_size # Number of actions
