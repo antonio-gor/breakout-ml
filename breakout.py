@@ -83,15 +83,14 @@ class Player:
     def naive_input(self, game):
         """ The naive AI follows the ball's horizontal position. """
 
+        ball_pos, paddle_pos = game.ball.center, game.paddle.center
+
         if game.state == 0:
             game.do_command('space')
-        elif game.state == 1:
-            ball_pos, paddle_pos = game.ball.center, game.paddle.center
-
-            if ball_pos > paddle_pos:
-                game.do_command('right')
-            else:
-                game.do_command('left')
+        elif game.state == 1 and ball_pos > paddle_pos:
+            game.do_command('right')
+        elif game.state == 1 and ball_pos < paddle_pos:
+            game.do_command('left')
         else:
             game.do_command('return')
 
@@ -201,9 +200,9 @@ class Breakout:
         """ Update the ball  velocity. """
 
         if self.hits == 2:
-            return -ball_vel * 2
-        elif self.hits == 6:
-            return int(-ball_vel * 1.5)
+            return -ball_vel + 5
+        if self.hits == 6:
+            return -ball_vel + 5
         return -ball_vel
 
     def move_ball(self):
@@ -309,30 +308,21 @@ class Breakout:
         # Start the game loop
         running = True
         while running:
-
             # Check for quit game
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
-            # Set the framerate and screen
             self.clock.tick(FPS)
             self.screen.fill(BLACK)
-
-            # Get command from player
             self.player.get_command(self)
-
-            # Check current game state
             self.handle_current_state()
 
-            # Draw paddle and ball
             pygame.draw.rect(self.screen, CYAN, self.paddle)
             pygame.draw.circle(self.screen, WHITE, (
                 self.ball.left + BALL_RADIUS,
                 self.ball.top + BALL_RADIUS), BALL_RADIUS)
-
-            # Draw all bricks
             for _, brick_line in enumerate(self.bricks):
                 for _, brick in enumerate(brick_line):
                     brick.draw(self.screen)
