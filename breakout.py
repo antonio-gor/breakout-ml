@@ -150,7 +150,7 @@ class Breakout:
         # Set ball to move using a random choice of direction (upwards)
         if seed:
             random.seed(seed)
-        self.ball_vel = [0,-5]#[random.uniform(-5, 5), -5]
+        self.ball_vel = [random.uniform(-5, 5), -5]
 
     def create_bricks(self):
         """ Create all bricks. """
