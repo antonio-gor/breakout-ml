@@ -254,7 +254,7 @@ class Breakout:
 
         self.clock.tick(FPS)
         self.screen.fill(BLACK)
-        player.get_command(self, self.player, self.player_type)
+        self.player.get_command(self)
         self.handle_current_state()
 
         pygame.draw.rect(self.screen, CYAN, self.paddle)

@@ -8,7 +8,12 @@ import pygame
 import breakout as bo
 
 
-class ManualPlayer():
+class Player():
+    """ General player class. """
+    def __init__(self):
+        pass
+
+class ManualPlayer(Player):
     """ Manual player class. """
     def get_command(self, game):
         """ Check for game inputs via keyboard when in manual mode. """
@@ -30,7 +35,7 @@ class ManualPlayer():
             game.do_command('return')
 
 
-class NaiveAI():
+class NaiveAI(Player):
     """ Naive AI player class. """
     def get_command(self, game):
         """ The naive AI follows the ball's horizontal position. """
@@ -46,12 +51,14 @@ class NaiveAI():
             game.do_command('return')
 
 
-class QLAI():
+class QLAI(Player):
     """ AI player class for use with QL algorithms. """
+    action_space_size = 2
+    observation_space_size = 101
+
     def get_command(self, game):
         """ Recieve command from QL-Learning Model. """
         state = game.get_state()
-        print(state)
         # command = self.get_command(state)
         # game.do_command(command)
 
@@ -61,10 +68,12 @@ class QLAI():
 
 
 CLASS = {'manual': ManualPlayer(), 'naive': NaiveAI(), 'ql': QLAI()}
-INPUT = {'manual': ManualPlayer.get_command,
-         'naive': NaiveAI.get_command,
-         'ql': QLAI.get_command}
 
-def get_command(game, player, player_type):
-    """ Get command from appropriate command method."""
-    return INPUT[player_type](player, game)
+
+"""
+env.reset(): state
+env.step(action): 
+
+action_size: env.action_space_size # Number of actions
+state_size: env.observation_space_size # Length of states
+"""
