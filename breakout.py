@@ -200,9 +200,9 @@ class Breakout:
         """ Update the ball  velocity. """
 
         if self.hits == 2:
-            return -ball_vel + 5
+            return -ball_vel - 5
         if self.hits == 6:
-            return -ball_vel + 5
+            return -ball_vel - 5
         return -ball_vel
 
     def move_ball(self):
