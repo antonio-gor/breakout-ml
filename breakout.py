@@ -94,9 +94,9 @@ class Player:
         else:
             game.do_command('return')
 
-    def ql_input(self, game):
-        """ . """
-
+    def ql_input(self, game, command):
+        """ Recieve command from QL-Learning Model. """
+        game.do_command(command)
 
 class Brick:
     """ Class for brick objects. """
@@ -127,8 +127,8 @@ class Breakout:
 
         # Create the game objects and containers
         self.lives, self.score, self.hits, self.state = None, None, None, None
-        self.bricks, self.num_bricks, self.paddle = None, None, None
-        self.ball, self.ball_vel, self.ball_speed = None, None, None
+        self.bricks, self.bricks_bool, self.num_bricks = None, None, None
+        self.ball, self.ball_vel, self.paddle = None, None, None
 
         self.init_game(seed)
 
@@ -141,6 +141,7 @@ class Breakout:
 
         # Create objects
         self.bricks = []
+        self.bricks_bool = []
         self.num_bricks = 0
         self.create_bricks()
         self.paddle = pygame.Rect(300, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT)
@@ -161,11 +162,14 @@ class Breakout:
         # Create bricks (from top left to bottom right)
         for i in range(BRICK_LINES):
             brick_line = []
+            bricks_bool_line = []
             for _ in range(BRICK_PER_LINE):
                 brick_line.append(Brick(x_pos, y_pos, BRICK_COLORS[i]))
+                bricks_bool_line.append(1)
                 self.num_bricks += 1
                 x_pos += BRICK_WIDTH + 10
             self.bricks.append(brick_line)
+            self.bricks_bool.append(bricks_bool_line)
             x_pos = 5
             y_pos += BRICK_HEIGHT + 5
 
@@ -238,12 +242,13 @@ class Breakout:
 
         # Check for collision with brick
         for i, brick_line in enumerate(self.bricks):
-            for _, brick in enumerate(brick_line):
+            for j, brick in enumerate(brick_line):
                 if self.ball.colliderect(brick.brick):
                     self.score += brick.score
                     self.num_bricks -= 1
                     self.ball_vel[1] = -self.ball_vel[1]
                     self.bricks[i].remove(brick)
+                    self.bricks_bool[i][j] = 0
                     break
 
         # Check for won game
@@ -297,6 +302,13 @@ class Breakout:
             x_val = (SCREEN_SIZE[0] - size[0]) / 2
             y_val = (SCREEN_SIZE[1] - size[1]) / 2
             self.screen.blit(font_surface, (x_val, y_val))
+
+    def output_state(self):
+        """ Outputs game state info. """
+        brick_list = [item for sublist in self.bricks_bool for item in sublist]
+        return [self.ball.center[0], self.ball.center[1],
+                self.ball_vel[0], self.ball_vel[1],
+                self.paddle.center[0]] + brick_list
 
     def run(self):
         """ Run Breakout. """
