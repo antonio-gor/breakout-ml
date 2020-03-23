@@ -150,7 +150,7 @@ class Breakout:
         # Set ball to move using a random choice of direction (upwards)
         if seed:
             random.seed(seed)
-        self.ball_vel = [random.uniform(-5, 5), -5]
+        self.ball_vel = [0,-5]#[random.uniform(-5, 5), -5]
 
     def create_bricks(self):
         """ Create all bricks. """
@@ -196,15 +196,6 @@ class Breakout:
                                       self.state == STATE_WON):
             self.init_game()
 
-    def update_ball_velocity(self, ball_vel):
-        """ Update the ball  velocity. """
-
-        if self.hits == 2:
-            return -ball_vel - 5
-        if self.hits == 6:
-            return -ball_vel - 5
-        return -ball_vel
-
     def move_ball(self):
         """ Move the ball object. """
 
@@ -225,17 +216,22 @@ class Breakout:
             self.ball.top = 0
             self.ball_vel[1] = -self.ball_vel[1]
 
+    def update_ball_velocity(self, ball_vel):
+        """ Update the ball velocity. """
+        boost = 4 if self.hits in (2, 4) else 0
+        return -(ball_vel + boost)
+
     def nudge_ball(self):
         """ Nudge ball if it collides on a paddle edge. """
 
-        ball_center = self.ball.center[0]
-        paddle_center = self.paddle.center[0]
+        ball_center, paddle_center = self.ball.center[0], self.paddle.center[0]
         paddle_left, paddle_right = self.paddle.left, self.paddle.right
+        h_vel = self.ball_vel[0]
 
-        if paddle_left <= ball_center < paddle_center - 10:
-            self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0] + 2)
-        elif paddle_right >= ball_center > paddle_center + 10:
-            self.ball_vel[0] = self.update_ball_velocity(self.ball_vel[0] - 2)
+        if paddle_left <= ball_center < (paddle_center - 8):
+            self.ball_vel[0] = h_vel*1.1 if h_vel != 0 else -1
+        elif paddle_right >= ball_center > (paddle_center + 8):
+            self.ball_vel[0] = h_vel*1.1 if h_vel != 0 else 1
 
     def handle_collision(self):
         """ Handle ball collision events. """
