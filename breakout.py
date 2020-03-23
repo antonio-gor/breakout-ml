@@ -24,10 +24,10 @@ MAX_BALL_X = SCREEN_SIZE[0] - BALL_DIAMETER
 MAX_BALL_Y = SCREEN_SIZE[1] - BALL_DIAMETER
 
 # Paddle Constant
-PADDLE_WIDTH, PADDLE_HEIGHT = 40, 8
+PADDLE_WIDTH, PADDLE_HEIGHT = 75, 8
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 PADDLE_Y = SCREEN_SIZE[1] - PADDLE_HEIGHT - 10
-PADDLE_SPEED = 5
+PADDLE_SPEED = 8
 
 # Brick Constants
 BRICK_WIDTH, BRICK_HEIGHT = 30, 6
@@ -94,9 +94,16 @@ class Player:
         else:
             game.do_command('return')
 
-    def ql_input(self, game, command):
+    def ql_input(self, game):
         """ Recieve command from QL-Learning Model. """
+        state = game.output_state()
+        command = self.get_ql_command(state)
         game.do_command(command)
+
+    def get_ql_command(self, state):
+        """ Choose a command given the game state. """
+        return 'space'
+
 
 class Brick:
     """ Class for brick objects. """
@@ -151,7 +158,7 @@ class Breakout:
         # Set ball to move using a random choice of direction (upwards)
         if seed:
             random.seed(seed)
-        self.ball_vel = [random.uniform(-5, 5), -5]
+        self.ball_vel = [random.uniform(-6, 6), -8]
 
     def create_bricks(self):
         """ Create all bricks. """
@@ -232,10 +239,10 @@ class Breakout:
         paddle_left, paddle_right = self.paddle.left, self.paddle.right
         h_vel = self.ball_vel[0]
 
-        if paddle_left <= ball_center < (paddle_center - 8):
-            self.ball_vel[0] = h_vel*1.1 if h_vel != 0 else -1
-        elif paddle_right >= ball_center > (paddle_center + 8):
-            self.ball_vel[0] = h_vel*1.1 if h_vel != 0 else 1
+        if paddle_left <= ball_center < (paddle_center - 15):
+            self.ball_vel[0] = -abs(h_vel*1.2) if h_vel != 0 else -1
+        elif paddle_right >= ball_center > (paddle_center + 15):
+            self.ball_vel[0] = abs(h_vel*1.2) if h_vel != 0 else 1
 
     def handle_collision(self):
         """ Handle ball collision events. """
