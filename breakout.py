@@ -35,11 +35,11 @@ BRICK_WIDTH, BRICK_HEIGHT = 30, 6
 BRICK_LINES, BRICK_PER_LINE = 8, 12
 BRICK_COLORS = [RED, RED, ORANGE, ORANGE, GREEN, GREEN, YELLOW, YELLOW]
 
-# State Constants
-STATE_BALL_IN_PADDLE = 0
-STATE_PLAYING = 1
-STATE_WON = 2
-STATE_GAME_OVER = 3
+# Mode Constants
+MODE_BALL_IN_PADDLE = 0
+MODE_PLAYING = 1
+MODE_WON = 2
+MODE_GAME_OVER = 3
 
 
 class Brick:
@@ -69,17 +69,17 @@ class Breakout:
         pygame.display.set_caption("Breakout")
 
         # Create the game objects and containers
-        self.lives, self.score, self.hits, self.state = None, None, None, None
+        self.lives, self.score, self.hits, self.mode = None, None, None, None
         self.bricks, self.bricks_bool, self.num_bricks = None, None, None
         self.ball, self.ball_vel, self.paddle = None, None, None
 
         self.init_game(seed)
 
-    def init_game(self, seed=None, lives=3, state=STATE_BALL_IN_PADDLE):
-        """ Initialize the game state. """
+    def init_game(self, seed=None, lives=3, mode=MODE_BALL_IN_PADDLE):
+        """ Initialize the game mode. """
         # Set constants
         self.lives, self.score, self.hits = lives, 0, 0
-        self.state = state
+        self.mode = mode
 
         # Create objects
         self.bricks = []
@@ -116,28 +116,28 @@ class Breakout:
 
     def start_game(self):
         """ Start the game by launching the ball. """
-        self.state = STATE_PLAYING
+        self.mode = MODE_PLAYING
 
-    def do_command(self, command):
-        """ Perform the command. """
+    def do_action(self, action):
+        """ Perform the action. """
         # Check for left arrow key and update position
-        if command == 'left':
+        if action == 'left':
             self.paddle.left -= PADDLE_SPEED
             if self.paddle.left < 0:
                 self.paddle.left = 0
 
         # Check for right arrow key and update position
-        if command == 'right':
+        if action == 'right':
             self.paddle.right += PADDLE_SPEED
             if self.paddle.left > MAX_PADDLE_X:
                 self.paddle.left = MAX_PADDLE_X
 
-        # Start the game by pressing SPACE if game is in init state
-        if command == 'space' and self.state == STATE_BALL_IN_PADDLE:
+        # Start the game by pressing SPACE if game is in init mode
+        if action == 'space' and self.mode == MODE_BALL_IN_PADDLE:
             self.start_game()
-        # Restart the game by pressing RETURN if game is in game over state
-        elif command == 'return' and (self.state == STATE_GAME_OVER or
-                                      self.state == STATE_WON):
+        # Restart the game by pressing RETURN if game is in game over mode
+        elif action == 'return' and (self.mode == MODE_GAME_OVER or
+                                     self.mode == MODE_WON):
             self.init_game()
 
     def move_ball(self):
@@ -190,7 +190,7 @@ class Breakout:
 
         # Check for won game
         if self.num_bricks == 0:
-            self.state = STATE_WON
+            self.mode = MODE_WON
 
         # Check for collision with paddle
         if self.ball.colliderect(self.paddle):
@@ -203,33 +203,39 @@ class Breakout:
         elif self.ball.top > self.paddle.top:
             self.lives -= 1
             if self.lives > 0:
-                self.state = STATE_BALL_IN_PADDLE
+                self.mode = MODE_BALL_IN_PADDLE
             else:
-                self.state = STATE_GAME_OVER
+                self.mode = MODE_GAME_OVER
 
-    def handle_current_state(self):
-        """ Get and handle action based on current game state. """
-        if self.state == STATE_PLAYING:
+    def handle_current_mode(self):
+        """ Get and handle action based on current game mode. """
+        if self.mode == MODE_PLAYING:
             self.move_ball()
             self.handle_collision()
-        elif self.state == STATE_BALL_IN_PADDLE:
+        elif self.mode == MODE_BALL_IN_PADDLE:
             self.ball.left = self.paddle.left + self.paddle.width / 2
             self.ball.top = self.paddle.top - self.ball.height
             self.show_message("PRESS SPACE TO LAUNCH THE BALL")
-        elif self.state == STATE_GAME_OVER:
+        elif self.mode == MODE_GAME_OVER:
             self.show_message("GAME OVER. PRESS ENTER TO PLAY AGAIN")
-        elif self.state == STATE_WON:
+        elif self.mode == MODE_WON:
             self.show_message("YOU WON! PRESS ENTER TO PLAY AGAIN")
 
+    def reward(self):
+        """ If game over, -1 for each remaining brick. Else, score. """
+        if self.mode == MODE_GAME_OVER:
+            return -len(self.bricks)
+        return self.score
+
     def show_stats(self):
-        """ Display game state information. """
+        """ Display game information. """
         if self.font:
             info = f"SCORE: {self.score}   LIVES: {self.lives}"
             font_surface = self.font.render(info, False, WHITE)
             self.screen.blit(font_surface, (STATS_X, STATS_Y))
 
     def show_message(self, message):
-        """ Display game state messages. """
+        """ Display game messages. """
         if self.font:
             size = self.font.size(message)
             font_surface = self.font.render(message, False, WHITE)
@@ -254,9 +260,9 @@ class Breakout:
 
         self.clock.tick(FPS)
         self.screen.fill(BLACK)
-        command = self.player.get_command(self)
-        self.do_command(command)
-        self.handle_current_state()
+        action = self.player.get_action(self)
+        self.do_action(action)
+        self.handle_current_mode()
 
         pygame.draw.rect(self.screen, CYAN, self.paddle)
         pygame.draw.circle(self.screen, WHITE, (

@@ -8,56 +8,59 @@ import pygame
 import breakout as bo
 
 
-class Player():
+class Player:
     """ General player class. """
     def __init__(self):
         self.type = {'manual': ManualPlayer, 'naive': NaiveAI, 'ql': QLAI}
 
+
 class ManualPlayer(Player):
     """ Manual player class. """
-    def get_command(self, game):
+    def get_action(self, game):
         """ Check for game inputs via keyboard when in manual mode. """
         # Get the key that is pressed
         keys = pygame.key.get_pressed()
-        command = ''
+        action = ''
 
         # Check for arrow key
         if keys[pygame.K_LEFT]:
-            command = 'left'
+            action = 'left'
         if keys[pygame.K_RIGHT]:
-            command = 'right'
+            action = 'right'
 
-        # Start the game by pressing SPACE if game is in init state
-        if keys[pygame.K_SPACE] and game.state == bo.STATE_BALL_IN_PADDLE:
-            command = 'space'
-        # Restart the game by pressing RETURN if game is in game over state
-        if keys[pygame.K_RETURN] and (game.state == bo.STATE_GAME_OVER or
-                                      game.state == bo.STATE_WON):
-            command = 'return'
-        return command
+        # Start the game by pressing SPACE if game is in init mode
+        if keys[pygame.K_SPACE] and game.mode == bo.MODE_BALL_IN_PADDLE:
+            action = 'space'
+        # Restart the game by pressing RETURN if game is in game over mode
+        if keys[pygame.K_RETURN] and (game.mode == bo.MODE_GAME_OVER or
+                                      game.mode == bo.MODE_WON):
+            action = 'return'
+        return action
 
 
 class NaiveAI(Player):
     """ Naive AI player class. """
-    def get_command(self, game):
+    def get_action(self, game):
         """ The naive AI follows the ball's horizontal position. """
         ball_pos, paddle_pos = game.ball.center, game.paddle.center
-        command = ''
-        
-        if game.state == 0:
-            command = 'space'
-        if game.state == 1 and ball_pos > paddle_pos:
-            command = 'right'
-        if game.state == 1 and ball_pos < paddle_pos:
-            command = 'left'
-        if game.state in (2, 3):
-            command = 'return'
-        return command
+        action = ''
+
+        if game.mode == 0:
+            action = 'space'
+        if game.mode == 1 and ball_pos > paddle_pos:
+            action = 'right'
+        if game.mode == 1 and ball_pos < paddle_pos:
+            action = 'left'
+        if game.mode in (2, 3):
+            action = 'return'
+        return action
 
 
 class QLAI(Player):
     """ AI player class for use with QL algorithms. """
-    def get_command(self, game):
+    actions = {0: '', 1: 'left', 2: 'right'}
+
+    def get_action(self, game):
         """ . """
-        command = ''
-        return command
+        action = ''
+        return action
