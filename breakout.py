@@ -6,7 +6,7 @@ import player
 
 # Screen Constants
 SCREEN_SIZE = 480, 640
-STATS_X, STATS_Y = 140, 10
+STATS_X, STATS_Y = 100, 10
 FPS = 60
 
 # Color Constants
@@ -59,6 +59,7 @@ class Breakout:
     """ Class for Breakout game. """
     def __init__(self, player_type='manual', seed=None):
         pygame.init()
+        self.game_num = 1
         self.player_type = player_type
         self.player = player.Player().type[player_type]()
 
@@ -138,6 +139,7 @@ class Breakout:
         # Restart the game by pressing RETURN if game is in game over mode
         elif action == 'return' and (self.mode == MODE_GAME_OVER or
                                      self.mode == MODE_WON):
+            self.game_num += 1
             self.init_game()
 
     def move_ball(self):
@@ -171,9 +173,9 @@ class Breakout:
         h_vel = self.ball_vel[0]
 
         if paddle_left <= ball_center < (paddle_center - 15):
-            self.ball_vel[0] = -abs(h_vel*1.2) if h_vel != 0 else -1
+            self.ball_vel[0] = -abs(h_vel*1.4) if h_vel != 0 else -1
         elif paddle_right >= ball_center > (paddle_center + 15):
-            self.ball_vel[0] = abs(h_vel*1.2) if h_vel != 0 else 1
+            self.ball_vel[0] = abs(h_vel*1.4) if h_vel != 0 else 1
 
     def handle_collision(self):
         """ Handle ball collision events. """
@@ -230,8 +232,8 @@ class Breakout:
     def show_stats(self):
         """ Display game information. """
         if self.font:
-            info = f"SCORE: {self.score}   LIVES: {self.lives}"
-            font_surface = self.font.render(info, False, WHITE)
+            s = f"SCORE: {self.score} LIVES: {self.lives} GAME: {self.game_num}"
+            font_surface = self.font.render(s, False, WHITE)
             self.screen.blit(font_surface, (STATS_X, STATS_Y))
 
     def show_message(self, message):

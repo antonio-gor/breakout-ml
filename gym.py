@@ -12,11 +12,6 @@ class Gym:
         self.player = game.player
         self.state = game.get_state()
 
-    def reset(self):
-        """ Reset the state of the environment to its initial playing mode. """
-        self.game.init_game(lives=1, mode=bo.MODE_PLAYING)
-        return self.game.output_state
-
     def step(self, action):
         """ Execute one time-step in a copy of the environment. """
         next_state = copy.deepcopy(self.game)  # TODO: fix copy method
@@ -26,6 +21,11 @@ class Gym:
         info = self.game.get_state()
         return next_state, reward, done, info
 
-    def run(self):
+    def reset(self):
+        """ Reset the state of the environment to its initial playing mode. """
+        self.game.init_game(lives=1, mode=bo.MODE_PLAYING)
+        return self.game.output_state
+
+    def render(self):
         """ Run the game environment. """
-        # TODO
+        self.game.run()
