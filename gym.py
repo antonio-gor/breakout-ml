@@ -19,7 +19,7 @@ class Gym:
 
     def step(self, action):
         """ Execute one time-step in a copy of the environment. """
-        next_state = copy.deepcopy(self.game)
+        next_state = copy.deepcopy(self.game)  # TODO: fix copy method
         next_state.do_action(action)
         reward = next_state.reward()
         done = next_state.mode == bo.MODE_GAME_OVER
@@ -28,4 +28,4 @@ class Gym:
 
     def run(self):
         """ Run the game environment. """
-        ...
+        # TODO

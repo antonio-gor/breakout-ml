@@ -62,5 +62,4 @@ class QLAI(Player):
 
     def get_action(self, game):
         """ . """
-        action = ''
-        return action
+        # TODO
