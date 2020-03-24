@@ -28,7 +28,7 @@ MAX_BALL_Y = SCREEN_SIZE[1] - BALL_DIAMETER
 PADDLE_WIDTH, PADDLE_HEIGHT = 75, 8
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 PADDLE_Y = SCREEN_SIZE[1] - PADDLE_HEIGHT - 10
-PADDLE_SPEED = 18
+PADDLE_SPEED = 30
 
 # Brick Constants
 BRICK_WIDTH, BRICK_HEIGHT = 30, 6
@@ -203,6 +203,7 @@ class Breakout:
 
         # Check for ball going below paddle y position
         elif self.ball.top > self.paddle.top:
+            print('ball below paddle: -1 live')
             self.lives -= 1
             if self.lives > 0:
                 self.mode = MODE_BALL_IN_PADDLE
