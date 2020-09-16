@@ -20,3 +20,6 @@ Contains the implementations of various agents:
 
 - QLAI: for use with QL algorithms [in progress]
 
+![start_game](imgs/start_game.png "start_game")
+
+![mid_game](imgs/mid_game.png "mid_game")
